@@ -8,6 +8,7 @@ pygame.display.toggle_fullscreen
 pygame.display.set_caption('Dobbelspel Test Envi')
 clock = pygame.time.Clock()
 pygame.font.init()
+pygame.mixer.init()
 Circles.Awake()
 
 class GameState:
@@ -29,6 +30,7 @@ class GameState:
             self.level+=1
             self.boss = AddBoss.bossList[self.level]
             self.boss.SetScreen(self.screen)
+            self.boss.PlayMusic()
             self.gamestate = 1
 
         pygame.display.update()
