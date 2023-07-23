@@ -18,10 +18,14 @@ class Boss:
         self.isWaiting = False
         self.hitList = []
         self.visualTimers = []
+        self.fadeActive = True
+        self.fadeAlpha = 255
+        self.fadeSurface = pygame.Surface((1920, 1080), pygame.SRCALPHA)
         self.Awake()
 
 
-    def LoadPlayerAssets(self):
+    def LoadUi(self):
+        self.FadeEffect()
         pygame.draw.rect(self.screen, (100, 100, 100 ), ((100, 100), (200, 20)))
         pygame.draw.rect(self.screen, (0, 255, 0), ((100, 100), (200, 20)))
 
@@ -33,6 +37,14 @@ class Boss:
     def PlayMusic(self):
         pygame.mixer.music.load(self.music)
         pygame.mixer.music.play()
+
+    
+    def FadeEffect(self):
+        if not self.fadeActive: return
+        pygame.draw.rect(self.fadeSurface, (0,0,0,self.fadeAlpha), (0,0,1920,1080))
+        self.screen.blit(self.fadeSurface, (0,0))
+        self.fadeAlpha-=2
+        if self.fadeAlpha < 1: self.fadeActive = False
 
 
     def TextRenderer(self, font, text, color, location= None, justify = False):
@@ -129,14 +141,13 @@ class Boss:
 
     def Update(self):
         self.screen.blit(self.character, (0,0))
-        self.LoadPlayerAssets()
+        self.LoadUi()
 
         pygame.draw.rect(self.screen, (100, 100, 100 ), ((360, 900), (1200, 30)))
         pygame.draw.rect(self.screen, (200, 0,0 ), ((360, 900), (1200, 30)))
         self.TextRenderer(pygame.font.Font('src\\fonts\\OptimusPrinceps.TTF', 30), f"{self.name}, {self.title}", (255, 255, 255), justify= (960, 880))
 
         self.PlaceHits()
-
 
         if not self.isWaiting: self.GetMapLine()
         else:
