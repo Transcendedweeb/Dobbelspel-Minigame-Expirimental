@@ -1,4 +1,4 @@
-import pygame, keyboard, Circles
+import pygame, Circles, pynput
 
 class Boss:
     def __init__(self, name, title, character, hitpoints, dmg, armor, bossLevel, specialTimer, music):
@@ -84,14 +84,16 @@ class Boss:
             except:
                 file.close()
                 return
-            
-        if lines[0] == "k":
-            line = lines[1:]
-            lineList = [float(value) if value.replace('.', '', 1).isdigit() else value for value in line.split("_")]
-            lineList[3] = lineList[3]*30
-            self.hitList.insert(0, lineList)
-            self.AddOuterRing(lineList)
-        else: self.CalculateWaitTime(float(lines[0]))
+        try:    
+            if lines[0] == "k":
+                line = lines[1:]
+                lineList = [float(value) if value.replace('.', '', 1).isdigit() else value for value in line.split("_")]
+                lineList[3] = lineList[3]*30
+                self.hitList.insert(0, lineList)
+                self.AddOuterRing(lineList)
+            elif lines[0] in ["", " ", "#"]: return
+            else: self.CalculateWaitTime(float(lines[0]))
+        except: pass
 
 
     def CreateHit(self, number, posY, posX, color, nextHit):
@@ -114,12 +116,21 @@ class Boss:
 
 
     def CheckInput(self):
-        if any(keyboard.is_pressed(key) for key in ['1', '2', '3', '4']):
-            key = int(keyboard.read_key())
-            if self.hitList != [] and key == self.hitList[len(self.hitList)-1][0]: 
-                self.hitList = self.hitList[:-1]
+        while True:
+            with pynput.keyboard.Listener(on_release = self.RemoveInput) as listener:
+                listener.join()
 
 
+    def RemoveInput(self, key):
+        try:
+            if key.char in ["1","2","3","4"]:
+                iKey = int(key.char)
+                if self.hitList != [] and iKey == self.hitList[len(self.hitList)-1][0]: 
+                    self.hitList = self.hitList[:-1]
+        except AttributeError:
+            pass
+
+                    
     def UpdateOuterRing(self, index):
         circle = self.visualTimers[index] # [posx, posy, color, radius, decreaseBy]
         circle[3] = circle[3] - circle[4]
@@ -142,6 +153,7 @@ class Boss:
     def Update(self):
         self.screen.blit(self.character, (0,0))
         self.LoadUi()
+        # self.CheckInput()
 
         pygame.draw.rect(self.screen, (100, 100, 100 ), ((360, 900), (1200, 30)))
         pygame.draw.rect(self.screen, (200, 0,0 ), ((360, 900), (1200, 30)))
@@ -157,5 +169,4 @@ class Boss:
                 self.wait = 0
                 self.isWaiting = False
 
-        self.CheckInput()
         self.UpdateHitTime()

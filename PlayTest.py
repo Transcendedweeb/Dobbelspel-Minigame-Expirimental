@@ -1,4 +1,4 @@
-import pygame, AddBoss, Circles
+import pygame, AddBoss, Circles, threading
 from sys import exit
 from keyboard import is_pressed
 
@@ -9,6 +9,7 @@ pygame.display.set_caption('Dobbelspel Test Envi')
 clock = pygame.time.Clock()
 pygame.font.init()
 pygame.mixer.init()
+pygame.mixer.music.set_volume(0.3)
 Circles.Awake()
 
 class GameState:
@@ -31,6 +32,9 @@ class GameState:
             self.boss = AddBoss.bossList[self.level]
             self.boss.SetScreen(self.screen)
             self.boss.PlayMusic()
+            bossThread = threading.Thread(target=self.boss.CheckInput)
+            bossThread.daemon = True
+            bossThread.start()
             self.gamestate = 1
 
         pygame.display.update()
