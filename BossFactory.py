@@ -1,18 +1,18 @@
 import pygame, Circles, pynput
 
 class Boss:
-    def __init__(self, name, title, character, hitpoints, dmg, armor, bossLevel, specialTimer, music):
+    def __init__(self, name, title, character, maxLoss, weakenAfter, dmg, specialTimer, music):
         self.name = name
         self.title = title
         self.character = character
-        self.hitpoints = hitpoints
         self.dmg = dmg
-        self.armor = armor
-        self.bossLevel = bossLevel
         self.specialTimer = specialTimer
         self.music = music
+        self.comboArray = [weakenAfter + num * weakenAfter for num in range(5)]
+        self.maxLoss = maxLoss
 
         self.screen = None
+        self.hitpoints = 1000
         self.frames = 0
         self.mapCounter = 0
         self.isWaiting = False
@@ -21,13 +21,26 @@ class Boss:
         self.fadeActive = True
         self.fadeAlpha = 255
         self.fadeSurface = pygame.Surface((1920, 1080), pygame.SRCALPHA)
+        self.currentCombo = 0
+        self.rawCombo = 0
+        self.loss = maxLoss/5
         self.Awake()
 
 
     def LoadUi(self):
         self.FadeEffect()
+        self.LoadBossUi()
+        
         pygame.draw.rect(self.screen, (100, 100, 100 ), ((100, 100), (200, 20)))
         pygame.draw.rect(self.screen, (0, 255, 0), ((100, 100), (200, 20)))
+
+    
+    def LoadBossUi(self):
+        pygame.draw.rect(self.screen, (100, 100, 100 ), ((360, 900), (1200, 30)))
+        self.TextRenderer(pygame.font.Font('src\\fonts\\OptimusPrinceps.TTF', 30), f"{self.name}, {self.title}", (255, 255, 255), justify= (960, 880))
+
+        widthBar = (1200*self.hitpoints)/1000
+        pygame.draw.rect(self.screen, (200, 0,0 ), ((360, 900), (widthBar, 30)))
 
 
     def SetScreen(self, screen):
@@ -127,8 +140,32 @@ class Boss:
                 iKey = int(key.char)
                 if self.hitList != [] and iKey == self.hitList[len(self.hitList)-1][0]: 
                     self.hitList = self.hitList[:-1]
-        except AttributeError:
-            pass
+                    self.hitpoints-=self.loss
+                    self.ChangeCombo(True)
+                else: self.ChangeCombo(False)
+        except AttributeError: pass
+
+
+    def ChangeCombo(self, confirm):
+        if confirm and self.rawCombo == self.maxLoss: return
+        elif confirm: self.rawCombo+=1
+        elif self.rawCombo != 0: self.rawCombo-=1
+
+        if self.rawCombo == self.comboArray[0]:
+            self.loss = self.maxLoss/5
+            self.combo = "d"
+        elif self.rawCombo == self.comboArray[1]:
+            self.loss = self.maxLoss - (self.maxLoss / 5)*3
+            self.combo = "c"
+        elif self.rawCombo == self.comboArray[2]:
+            self.loss = self.maxLoss - (self.maxLoss / 5)*2
+            self.combo = "b"
+        elif self.rawCombo == self.comboArray[3]:
+            self.loss = self.maxLoss - (self.maxLoss / 5)
+            self.combo = "a"
+        elif self.rawCombo == self.comboArray[4]:
+            self.loss = self.maxLoss
+            self.combo = "s"
 
                     
     def UpdateOuterRing(self, index):
@@ -146,18 +183,12 @@ class Boss:
         
 
 
-
     def Awake(self):
         self.character = pygame.image.load(self.character)
 
     def Update(self):
         self.screen.blit(self.character, (0,0))
         self.LoadUi()
-        # self.CheckInput()
-
-        pygame.draw.rect(self.screen, (100, 100, 100 ), ((360, 900), (1200, 30)))
-        pygame.draw.rect(self.screen, (200, 0,0 ), ((360, 900), (1200, 30)))
-        self.TextRenderer(pygame.font.Font('src\\fonts\\OptimusPrinceps.TTF', 30), f"{self.name}, {self.title}", (255, 255, 255), justify= (960, 880))
 
         self.PlaceHits()
 
