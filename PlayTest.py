@@ -35,7 +35,7 @@ class GameState:
             bossThread = threading.Thread(target=self.boss.CheckInput)
             bossThread.daemon = True
             bossThread.start()
-            self.gamestate = 1
+            self.gamestate = 20
 
         pygame.display.update()
 
@@ -43,14 +43,27 @@ class GameState:
         self.ExitCheck()
 
         self.boss.Update()
+        self.gamestate = self.boss.CheckVictory(self.gamestate)
+        pygame.display.update()
+
+    def BossDefeat(self):
+        self.ExitCheck()
+        screen.fill((155, 0, 0))
+        pygame.display.update()
+
+    def BossVictory(self):
+        self.ExitCheck()
+        screen.fill((155, 155, 155))
         pygame.display.update()
 
     def StateManager(self):
-        if self.gamestate == 0:
-            self.Stanby()
+        if self.gamestate == 0: self.Stanby()
 
-        else:
-            self.BossFight()
+        elif self.gamestate == 1: self.BossVictory()
+
+        elif self.gamestate == 2: self.BossDefeat()
+
+        else: self.BossFight()
 
 gameState = GameState(screen)
 while True:

@@ -1,38 +1,20 @@
-import pygame, Circles, pynput
+import pygame, Circles, pynput, os, random
 
 class Boss:
-    def __init__(self, name, title, character, maxLoss, weakenAfter, dmg, specialTimer, music):
+    def __init__(self, name, title, maxLoss, weakenAfter, dmg, specialTimer):
         self.name = name
         self.title = title
-        self.character = character
         self.dmg = dmg
         self.specialTimer = specialTimer
-        self.music = music
         self.comboArray = [weakenAfter + num * weakenAfter for num in range(5)]
         self.maxLoss = maxLoss
-
-        self.screen = None
-        self.hitpoints = 1000
-        self.frames = 0
-        self.mapCounter = 0
-        self.isWaiting = False
-        self.hitList = []
-        self.visualTimers = []
-        self.fadeActive = True
-        self.fadeAlpha = 255
-        self.fadeSurface = pygame.Surface((1920, 1080), pygame.SRCALPHA)
-        self.currentCombo = 0
-        self.rawCombo = 0
-        self.loss = maxLoss/5
         self.Awake()
 
 
     def LoadUi(self):
         self.FadeEffect()
         self.LoadBossUi()
-        
-        pygame.draw.rect(self.screen, (100, 100, 100 ), ((100, 100), (200, 20)))
-        pygame.draw.rect(self.screen, (0, 255, 0), ((100, 100), (200, 20)))
+        self.LoadPlayerUi()
 
     
     def LoadBossUi(self):
@@ -42,6 +24,31 @@ class Boss:
         widthBar = (1200*self.hitpoints)/1000
         pygame.draw.rect(self.screen, (200, 0,0 ), ((360, 900), (widthBar, 30)))
 
+        self.screen.blit(self.flora, (340, 885))
+
+
+    def LoadPlayerUi(self):
+        self.screen.blit(self.brokenglass, (0, 0))
+
+        if self.combo == "d": self.screen.blit(self.comboD, (0, 0))
+        elif self.combo == "c": self.screen.blit(self.comboC, (0, 0))
+        elif self.combo == "b": self.screen.blit(self.comboB, (0, 0))
+        elif self.combo == "a": self.screen.blit(self.comboA, (0, 0))
+        elif self.combo == "s": self.screen.blit(self.comboS, (0, 0))
+
+        widthBar = (300*self.playerHp)/1000
+        pygame.draw.rect(self.screen, (100, 100, 100 ), ((125, 40), (300, 20)))
+        pygame.draw.rect(self.screen, (0, 255, 0), ((125, 40), (widthBar, 20)))
+
+    
+    def LoadVoice(self):
+        self.voice = []
+        self.voiceCooldown= 0
+        folderPath = f"src\\audio\\{self.name}\\voice"
+        for file in os.listdir(folderPath):
+            filePath = os.path.join(folderPath, file)
+            if os.path.isfile(filePath) and file[-1] != "S": self.voice.append(pygame.mixer.Sound(filePath))
+
 
     def SetScreen(self, screen):
         self.screen = screen
@@ -50,6 +57,15 @@ class Boss:
     def PlayMusic(self):
         pygame.mixer.music.load(self.music)
         pygame.mixer.music.play()
+
+
+    def PlaySound(self, hit):
+        self.voiceCooldown+=1
+        rand = random.randint(30*7, 30*10)
+        if hit and self.voiceCooldown >= rand:
+            index = random.randint(0, len(self.voice))
+            self.voice[index].play()
+            self.voiceCooldown=0
 
     
     def FadeEffect(self):
@@ -104,8 +120,13 @@ class Boss:
                 lineList[3] = lineList[3]*30
                 self.hitList.insert(0, lineList)
                 self.AddOuterRing(lineList)
-            elif lines[0] in ["", " ", "#"]: return
-            else: self.CalculateWaitTime(float(lines[0]))
+                self.PlaySound(True)
+            elif lines[0] in ["", " ", "#"]: 
+                self.PlaySound(False)
+                return
+            else: 
+                self.PlaySound(False)
+                self.CalculateWaitTime(float(lines[0]))
         except: pass
 
 
@@ -147,20 +168,22 @@ class Boss:
 
 
     def ChangeCombo(self, confirm):
-        if confirm and self.rawCombo == self.maxLoss: return
+        if confirm and self.rawCombo == self.comboArray[4]: return
         elif confirm: self.rawCombo+=1
-        elif self.rawCombo != 0: self.rawCombo-=1
+        elif self.rawCombo != 0: 
+            self.rawCombo-=1
+            self.DealDamage(self.dmg//2)
 
-        if self.rawCombo == self.comboArray[0]:
+        if self.rawCombo < self.comboArray[1]:
             self.loss = self.maxLoss/5
             self.combo = "d"
-        elif self.rawCombo == self.comboArray[1]:
+        elif self.rawCombo < self.comboArray[2]:
             self.loss = self.maxLoss - (self.maxLoss / 5)*3
             self.combo = "c"
-        elif self.rawCombo == self.comboArray[2]:
+        elif self.rawCombo < self.comboArray[3]:
             self.loss = self.maxLoss - (self.maxLoss / 5)*2
             self.combo = "b"
-        elif self.rawCombo == self.comboArray[3]:
+        elif self.rawCombo < self.comboArray[4]:
             self.loss = self.maxLoss - (self.maxLoss / 5)
             self.combo = "a"
         elif self.rawCombo == self.comboArray[4]:
@@ -180,11 +203,56 @@ class Boss:
             if array[3] <= 0: 
                 self.hitList.remove(array)
                 self.visualTimers.pop(e)
+                self.DealDamage(self.dmg)
+                self.currentCombo = 0
+                self.rawCombo = 0
+                self.combo = "d"
+
+    
+    def DealDamage(self, dmg):
+        self.playerHp-=dmg
+
+    
+    def CheckVictory(self, current):
+        if self.playerHp < 1: 
+            pygame.mixer.music.stop()
+            return 2
+        elif self.hitpoints < 1: 
+            pygame.mixer.music.stop()
+            return 1
+        else: return current
         
 
 
     def Awake(self):
-        self.character = pygame.image.load(self.character)
+        self.character = pygame.image.load(f"src\\img\\bosses\\{self.name}\\test.PNG")
+        self.music = f"src\\audio\\{self.name}\\song.mp3"
+        self.comboD = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_d.PNG")
+        self.comboC = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_c.PNG")
+        self.comboB = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_b.PNG")
+        self.comboA = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_a.PNG")
+        self.comboS = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_s.PNG")
+        self.brokenglass = pygame.image.load("src\\img\\ui\\brokenglass.PNG")
+        self.flora = pygame.image.load("src\\img\\ui\\flora_dec.PNG")
+
+        self.screen = None
+        self.hitpoints = 1000
+        self.playerHp = 1000
+        self.frames = 0
+        self.mapCounter = 0
+        self.isWaiting = False
+        self.hitList = []
+        self.visualTimers = []
+        self.fadeActive = True
+        self.fadeAlpha = 255
+        self.fadeSurface = pygame.Surface((1920, 1080), pygame.SRCALPHA)
+        self.currentCombo = 0
+        self.rawCombo = 0
+        self.combo = "d"
+        self.loss = self.maxLoss/5
+        pygame.mixer.init()
+
+        self.LoadVoice()
 
     def Update(self):
         self.screen.blit(self.character, (0,0))
@@ -195,6 +263,7 @@ class Boss:
         if not self.isWaiting: self.GetMapLine()
         else:
             self.frames+=1
+            self.PlaySound(False)
             if self.frames >= self.wait:
                 self.frames = 0
                 self.wait = 0

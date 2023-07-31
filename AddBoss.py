@@ -1,14 +1,12 @@
 import BossFactory
 
 testBoss = BossFactory.Boss(
-    name= "Test", 
-    title= "The True Boss", 
-    character= "src\\img\\bosses\\Test.PNG",
-    music= "src\\audio\\testBoss\\testBoss.mp3",
-    dmg= 5,
+    name= "Raiden Shogun",
+    title= "The True Boss",
+    dmg= 75,
     specialTimer= 1,
-    maxLoss= 100,
-    weakenAfter= 2
+    maxLoss= 20,
+    weakenAfter= 5
 )
 
 bossList = [testBoss]
