@@ -1,4 +1,4 @@
-import pygame, Circles, pynput, os, random
+import pygame, Circles, pynput, os, random, CreateGif
 
 class Boss:
     def __init__(self, name, title, maxLoss, weakenAfter, dmg, specialTimer):
@@ -76,7 +76,7 @@ class Boss:
         if self.fadeAlpha < 1: self.fadeActive = False
 
 
-    def TextRenderer(self, font, text, color, location= None, justify = False):
+    def TextRenderer(self, font, text, color, location= None, justify= False):
         renderObject = font.render(text, True, color)
         if(justify): self.JustifyText(renderObject, justify)
         else: self.screen.blit(renderObject, location)
@@ -225,7 +225,7 @@ class Boss:
 
 
     def Awake(self):
-        self.character = pygame.image.load(f"src\\img\\bosses\\{self.name}\\test.PNG")
+        self.character = (f"src\\img\\bosses\\{self.name}")
         self.music = f"src\\audio\\{self.name}\\song.mp3"
         self.comboD = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_d.PNG")
         self.comboC = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_c.PNG")
@@ -234,6 +234,10 @@ class Boss:
         self.comboS = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_s.PNG")
         self.brokenglass = pygame.image.load("src\\img\\ui\\brokenglass.PNG")
         self.flora = pygame.image.load("src\\img\\ui\\flora_dec.PNG")
+
+        self.spriteGroup = pygame.sprite.Group()
+        sprite = CreateGif.Sprite(0,0, self.character)
+        self.spriteGroup.add(sprite)
 
         self.screen = None
         self.hitpoints = 1000
@@ -255,7 +259,8 @@ class Boss:
         self.LoadVoice()
 
     def Update(self):
-        self.screen.blit(self.character, (0,0))
+        self.spriteGroup.draw(self.screen)
+        self.spriteGroup.update(.3)
         self.LoadUi()
 
         self.PlaceHits()
