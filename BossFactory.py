@@ -260,7 +260,7 @@ class Boss:
 
     def Update(self):
         self.spriteGroup.draw(self.screen)
-        self.spriteGroup.update(.3)
+        self.spriteGroup.update(.4)
         self.LoadUi()
 
         self.PlaceHits()
