@@ -104,6 +104,7 @@ class Boss:
 
 
     def GetMapLine(self):
+        self.line = None
         with open(f"src\\game_maps\\{self.name}.TXT") as file:
             lines = file.readlines()
             try:
@@ -113,7 +114,8 @@ class Boss:
             except:
                 file.close()
                 return
-        try:    
+        try:
+            self.line = lines[0]
             if lines[0] == "k":
                 line = lines[1:]
                 lineList = [float(value) if value.replace('.', '', 1).isdigit() else value for value in line.split("_")]
@@ -121,7 +123,7 @@ class Boss:
                 self.hitList.insert(0, lineList)
                 self.AddOuterRing(lineList)
                 self.PlaySound(True)
-            elif lines[0] in ["", " ", "#"]: 
+            elif lines[0] in ["", " ", "#", "s", "S"]: 
                 self.PlaySound(False)
                 return
             else: 
