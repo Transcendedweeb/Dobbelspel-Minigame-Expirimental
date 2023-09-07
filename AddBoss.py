@@ -7,7 +7,7 @@ testBoss = SpecialMoveFactory.SpecialBoss(
     specialTimer= 1,
     maxLoss= 20,
     weakenAfter= 5,
-    activeTime=5,
+    activeTime=6,
     voiceTime=2.2,
     updateSpeedSpecial = 1
 )
