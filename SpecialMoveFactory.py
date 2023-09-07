@@ -1,11 +1,13 @@
-import BossFactory, pygame
+import BossFactory, pygame, CreateGif
 
 class SpecialBoss(BossFactory.Boss):
-    def __init__(self, name, title, dmg, specialTimer, maxLoss, weakenAfter, activeTime, voiceTime):
+    def __init__(self, name, title, dmg, specialTimer, maxLoss, weakenAfter, activeTime, voiceTime, updateSpeedSpecial):
         super().__init__(name, title, maxLoss, weakenAfter, dmg, specialTimer)
 
         self.activeTime = activeTime*30
         self.voiceTime = voiceTime*30
+        self.updateSpeedSpecial = updateSpeedSpecial
+        self.hardVoiceTime = self.voiceTime
 
     
     def GetMapLine(self):
@@ -14,16 +16,24 @@ class SpecialBoss(BossFactory.Boss):
             self.initMove = True
 
 
+    def PlaySound(self, hit):
+        if self.initMove: return
+        else: super().PlaySound(hit)
+
+
     def Awake(self):
         super().Awake()
-        self.specialMove = pygame.image.load(f"src\\img\\bosses\\{self.name}\\special\\special.PNG")
+        self.specialMove = f"src\\img\\bosses\\{self.name}\\special\\"
+        self.specialGroup = pygame.sprite.Group()
+        self.specialSprite = CreateGif.Sprite(0,0, self.specialMove)
+        self.specialGroup.add(self.specialSprite)
+
         self.specialMoveVoice = pygame.mixer.Sound(f"src\\audio\\{self.name}\\voice\\voiceS.MP3")
         self.initMove = False
         self.moveCurrentTime = 0
 
     def Update(self):
         super().Update()
-        print(self.initMove, self.moveCurrentTime)
         if self.initMove:
             self.moveCurrentTime+=1
 
@@ -32,7 +42,10 @@ class SpecialBoss(BossFactory.Boss):
                 self.specialMoveVoice.play()
 
             if self.moveCurrentTime > self.activeTime:
+                self.specialSprite.current_sprite = 0
                 self.moveCurrentTime = 0
-                self.voiceTime = 0
+                self.voiceTime = self.hardVoiceTime
                 self.initMove = False
-            else: self.screen.blit(self.specialMove, (0,0))
+            else: 
+                self.specialGroup.draw(self.screen)
+                self.specialGroup.update(self.updateSpeedSpecial)

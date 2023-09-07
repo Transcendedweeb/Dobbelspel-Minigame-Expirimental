@@ -8,7 +8,8 @@ testBoss = SpecialMoveFactory.SpecialBoss(
     maxLoss= 20,
     weakenAfter= 5,
     activeTime=5,
-    voiceTime=2
+    voiceTime=2.2,
+    updateSpeedSpecial = 1
 )
 
 bossList = [testBoss]
