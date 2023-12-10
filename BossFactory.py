@@ -1,4 +1,4 @@
-import pygame, Circles, pynput, os, random, CreateGif
+import pygame, Circles, pynput, os, random
 
 class Boss:
     def __init__(self, name, title, maxLoss, weakenAfter, dmg, specialTimer):
@@ -12,6 +12,7 @@ class Boss:
 
 
     def LoadUi(self):
+        self.screen.blit(self.character, (0, 0))
         self.FadeEffect()
         self.LoadBossUi()
         self.LoadPlayerUi()
@@ -88,7 +89,7 @@ class Boss:
 
 
     def CalculateWaitTime(self, time):
-        self.wait = (time*30) / 1
+        self.wait = (time*30)
         self.isWaiting = True
 
 
@@ -123,12 +124,14 @@ class Boss:
                 self.hitList.insert(0, lineList)
                 self.AddOuterRing(lineList)
                 self.PlaySound(True)
+            elif lines[0] in ["e", "E"]:
+                self.mapCounter = 0
             elif lines[0] in ["", " ", "#", "s", "S"]: 
                 self.PlaySound(False)
                 return
             else: 
                 self.PlaySound(False)
-                self.CalculateWaitTime(float(lines[0]))
+                self.CalculateWaitTime(float(lines))
         except: pass
 
 
@@ -227,7 +230,7 @@ class Boss:
 
 
     def Awake(self):
-        self.character = (f"src\\img\\bosses\\{self.name}")
+        self.character = pygame.image.load(f"src\\img\\bosses\\{self.name}\\sprite.png")
         self.music = f"src\\audio\\{self.name}\\song.mp3"
         self.comboD = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_d.PNG")
         self.comboC = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_c.PNG")
@@ -236,10 +239,6 @@ class Boss:
         self.comboS = pygame.image.load("src\\img\\combat_probs\\combo_count\\combo_s.PNG")
         self.brokenglass = pygame.image.load("src\\img\\ui\\brokenglass.PNG")
         self.flora = pygame.image.load("src\\img\\ui\\flora_dec.PNG")
-
-        self.spriteGroup = pygame.sprite.Group()
-        sprite = CreateGif.Sprite(0,0, self.character)
-        self.spriteGroup.add(sprite)
 
         self.screen = None
         self.hitpoints = 1000
@@ -261,8 +260,6 @@ class Boss:
         self.LoadVoice()
 
     def Update(self):
-        self.spriteGroup.draw(self.screen)
-        self.spriteGroup.update(.4)
         self.LoadUi()
 
         self.PlaceHits()
