@@ -1,13 +1,14 @@
 import pygame, Circles, pynput, os, random
 
 class Boss:
-    def __init__(self, name, title, maxLoss, weakenAfter, dmg, specialTimer):
+    def __init__(self, name, title, maxLoss, weakenAfter, dmg):
         self.name = name
         self.title = title
         self.dmg = dmg
-        self.specialTimer = specialTimer
         self.comboArray = [weakenAfter + num * weakenAfter for num in range(5)]
         self.maxLoss = maxLoss
+        self.runThreath = True
+
         self.Awake()
 
 
@@ -155,7 +156,7 @@ class Boss:
 
 
     def CheckInput(self):
-        while True:
+        while self.runThreath:
             with pynput.keyboard.Listener(on_release = self.RemoveInput) as listener:
                 listener.join()
 
@@ -168,14 +169,15 @@ class Boss:
                     self.hitList = self.hitList[:-1]
                     self.hitpoints-=self.loss
                     self.ChangeCombo(True)
-                else: self.ChangeCombo(False)
+                else: 
+                    self.ChangeCombo(False)
         except AttributeError: pass
 
 
     def ChangeCombo(self, confirm):
         if confirm and self.rawCombo == self.comboArray[4]: return
         elif confirm: self.rawCombo+=1
-        elif self.rawCombo != 0: 
+        elif self.rawCombo != 0:
             self.rawCombo-=1
             self.DealDamage(self.dmg//2)
 
@@ -220,13 +222,36 @@ class Boss:
     
     def CheckVictory(self, current):
         if self.playerHp < 1: 
+            self.runThreath = False
+            self.ResetDeath()
             pygame.mixer.music.stop()
             return 2
         elif self.hitpoints < 1: 
+            self.runThreath = False
+            self.ResetDeath()
             pygame.mixer.music.stop()
             return 1
         else: return current
-        
+
+
+    def ResetDeath(self):
+        self.character = pygame.image.load(f"src\\img\\bosses\\{self.name}\\sprite.png")
+        self.screen = None
+        self.hitpoints = 1000
+        self.playerHp = 1000
+        self.frames = 0
+        self.mapCounter = 0
+        self.isWaiting = False
+        self.hitList = []
+        self.visualTimers = []
+        self.fadeActive = True
+        self.fadeAlpha = 255
+        self.fadeSurface = pygame.Surface((1920, 1080), pygame.SRCALPHA)
+        self.currentCombo = 0
+        self.rawCombo = 0
+        self.combo = "d"
+        self.loss = self.maxLoss/5
+
 
 
     def Awake(self):
@@ -274,3 +299,20 @@ class Boss:
                 self.isWaiting = False
 
         self.UpdateHitTime()
+
+class PreBoss(Boss):
+    def __init__(self, name, title, dmg, maxLoss, weakenAfter):
+        super().__init__(name, title, maxLoss, weakenAfter, dmg)
+
+    def CheckVictory(self, current):
+        if self.playerHp < 1:
+            self.runThreath = False
+            self.ResetDeath()
+            pygame.mixer.music.stop()
+            return 2
+        elif self.hitpoints < 1:
+            self.runThreath = False
+            self.ResetDeath()
+            pygame.mixer.music.stop()
+            return 21
+        else: return current

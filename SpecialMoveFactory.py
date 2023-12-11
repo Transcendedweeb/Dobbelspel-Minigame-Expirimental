@@ -1,8 +1,8 @@
 import BossFactory, pygame, CreateGif
 
 class SpecialBoss(BossFactory.Boss):
-    def __init__(self, name, title, dmg, specialTimer, maxLoss, weakenAfter, activeTime, voiceTime, updateSpeedSpecial):
-        super().__init__(name, title, maxLoss, weakenAfter, dmg, specialTimer)
+    def __init__(self, name, title, dmg, maxLoss, weakenAfter, activeTime, voiceTime, updateSpeedSpecial):
+        super().__init__(name, title, maxLoss, weakenAfter, dmg)
 
         self.activeTime = activeTime*30
         self.voiceTime = voiceTime*30
@@ -24,9 +24,11 @@ class SpecialBoss(BossFactory.Boss):
     def Awake(self):
         super().Awake()
         self.specialMove = f"src\\img\\bosses\\{self.name}\\special\\"
-        self.specialGroup = pygame.sprite.Group()
-        self.specialSprite = CreateGif.Sprite(0,0, self.specialMove)
-        self.specialGroup.add(self.specialSprite)
+
+        if self.name != "Mordekaiser":
+            self.specialGroup = pygame.sprite.Group()
+            self.specialSprite = CreateGif.Sprite(0,0, self.specialMove)
+            self.specialGroup.add(self.specialSprite)
 
         self.specialMoveVoice = pygame.mixer.Sound(f"src\\audio\\{self.name}\\voice\\voiceS.MP3")
         self.initMove = False
@@ -34,7 +36,7 @@ class SpecialBoss(BossFactory.Boss):
 
     def Update(self):
         super().Update()
-        if self.initMove:
+        if self.initMove and self.name != "Mordekaiser":
             self.moveCurrentTime+=1
 
             if self.moveCurrentTime > self.voiceTime:
@@ -49,3 +51,8 @@ class SpecialBoss(BossFactory.Boss):
             else: 
                 self.specialGroup.draw(self.screen)
                 self.specialGroup.update(self.updateSpeedSpecial)
+        elif self.initMove and self.name == "Mordekaiser":
+            self.character = pygame.image.load(f"{self.specialMove}\\special.PNG")
+            self.voiceTime = 1000000
+            self.specialMoveVoice.play()
+            self.initMove = False

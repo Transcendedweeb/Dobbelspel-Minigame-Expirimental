@@ -16,8 +16,10 @@ class GameState:
     def __init__(self, screen):
         self.screen = screen
         self.gamestate = 0
-        self.level = -1
+        self.level = 0
         self.bossStart = False
+        self.bgFailed = pygame.image.load("src\\img\\end_boss_bg\\failed.PNG")
+        self.bgVictory = pygame.image.load("src\\img\\end_boss_bg\\victory.PNG")
 
     def ExitCheck(self):
         for event in pygame.event.get():
@@ -27,8 +29,8 @@ class GameState:
     def Stanby(self):
         self.ExitCheck()
         screen.fill((255, 255, 255))
-        if is_pressed("space"): 
-            self.level+=1
+        if is_pressed("space"):
+            if self.level == 7: return
             self.boss = AddBoss.bossList[self.level]
             self.boss.SetScreen(self.screen)
             self.boss.PlayMusic()
@@ -46,14 +48,34 @@ class GameState:
         self.gamestate = self.boss.CheckVictory(self.gamestate)
         pygame.display.update()
 
+    def FinalBoss(self):
+        self.level+=1
+        self.boss = AddBoss.bossList[self.level]
+        self.boss.SetScreen(self.screen)
+        self.boss.PlayMusic()
+        bossThread = threading.Thread(target=self.boss.CheckInput)
+        bossThread.daemon = True
+        bossThread.start()
+        self.level-=1
+        self.gamestate = 20
+
+        pygame.display.update()
+
     def BossDefeat(self):
         self.ExitCheck()
-        screen.fill((155, 0, 0))
+        self.screen.blit(self.bgFailed, (0,0))
+        if is_pressed("1"):
+            self.gamestate = 0
+
         pygame.display.update()
 
     def BossVictory(self):
         self.ExitCheck()
-        screen.fill((155, 155, 155))
+        self.screen.blit(self.bgVictory, (0,0))
+        if is_pressed("1"):
+            self.level+=1
+            self.gamestate = 0
+        
         pygame.display.update()
 
     def StateManager(self):
@@ -63,7 +85,9 @@ class GameState:
 
         elif self.gamestate == 2: self.BossDefeat()
 
-        else: self.BossFight()
+        elif self.gamestate == 20: self.BossFight()
+
+        elif self.gamestate == 21: self.FinalBoss()
 
 gameState = GameState(screen)
 while True:
