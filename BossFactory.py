@@ -58,7 +58,7 @@ class Boss:
 
     def PlayMusic(self):
         pygame.mixer.music.load(self.music)
-        pygame.mixer.music.play()
+        pygame.mixer.music.play(loops=-1)
 
 
     def PlaySound(self, hit):
