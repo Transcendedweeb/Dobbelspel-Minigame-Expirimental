@@ -3,32 +3,32 @@ import BossFactory, SpecialMoveFactory
 boss1 = BossFactory.Boss(
     name= "Patrick Ster",
     title= "",
-    dmg= 5,
-    maxLoss= 30,
-    weakenAfter= 5,
+    dmg= 100,
+    maxLoss= 25,
+    weakenAfter= 3,
 )
 
 boss2 = BossFactory.Boss(
     name= "Mohammed",
     title= "Islam's Holy Chicken",
-    dmg= 2,
-    maxLoss= 5,
-    weakenAfter= 5,
+    dmg= 150,
+    maxLoss= 25,
+    weakenAfter= 10,
 )
 
 boss3 = BossFactory.Boss(
     name= "Marco",
     title= "The True Fart Lord",
-    dmg= 2,
-    maxLoss= 5,
-    weakenAfter= 5,
+    dmg= 80,
+    maxLoss= 12,
+    weakenAfter= 10,
 )
 
 boss4 = SpecialMoveFactory.SpecialBoss(
     name= "Artorias",
     title= "Wolf of the Abyss",
     dmg= 2,
-    maxLoss= 5,
+    maxLoss= 30,
     weakenAfter= 5,
     activeTime=11.5,
     voiceTime=7.0,
@@ -39,7 +39,7 @@ boss5 = SpecialMoveFactory.SpecialBoss(
     name= "Raiden Shogun",
     title= "The Electro Archon",
     dmg= 10,
-    maxLoss= 4,
+    maxLoss= 30,
     weakenAfter= 5,
     activeTime=6,
     voiceTime=2.2,
@@ -60,8 +60,8 @@ boss6 = SpecialMoveFactory.SpecialBoss(
 boss7 = BossFactory.PreBoss(
     name= "BLANK",
     title= "",
-    dmg= 10,
-    maxLoss= 100,
+    dmg= 2,
+    maxLoss= 5,
     weakenAfter= 5,
 )
 
@@ -76,4 +76,4 @@ boss8 = SpecialMoveFactory.SpecialBoss(
     updateSpeedSpecial = 0.35
 )
 
-bossList = [boss5]
+bossList = [boss4]
