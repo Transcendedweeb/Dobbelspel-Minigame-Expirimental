@@ -29,7 +29,7 @@ class GameState:
     def Stanby(self):
         self.ExitCheck()
         screen.fill((255, 255, 255))
-        if is_pressed("space"):
+        if is_pressed("space") and self.level < 7:
             if self.level == 7: return
             self.boss = AddBoss.bossList[self.level]
             self.boss.SetScreen(self.screen)
